@@ -6,10 +6,12 @@ services:
     ports:
       - "9200:9200"
       - "9300:9300"
-    environment: 
-      - discovery.type=single-node
+    volumes:
+      - ./es/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml:ro
     networks:
       - local-network
+    environment: 
+      ES_JAVA_OPTS: "-Xmx256m -Xms256m"
   kibana:
     image: docker.elastic.co/kibana/kibana:7.2.0
     container_name: kibana
@@ -27,7 +29,9 @@ services:
   logstash:
     build: ./logstash
     container_name: logstash
-    environment: 
+    environment:
+      - ES_JAVA_OPTS: "-Xmx256m -Xms256m"
+    volumes: 
       - ./logstash/config/logstash.yml:/usr/share/logstash/config/logstash.yml:ro
       - ./logstash/pipeline:/usr/share/logstash/pipeline:ro
     ports:
