@@ -1,0 +1,21 @@
+version: '3'
+services:
+  mssql-2019:
+    build: .
+    container_name: "mssql-2019"
+    networks: 
+      - local-network
+    ports:
+      - "1433:1433"
+    restart: always   
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=example123!   
+      - MSSQL_PID=Developer
+    volumes:
+      - mssql-2019-volumes:/var/opt/mssql
+networks: 
+  local-network:
+    driver: bridge
+volumes:
+  mssql-2019-volumes:

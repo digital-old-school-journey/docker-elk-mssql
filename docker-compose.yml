@@ -1,0 +1,61 @@
+version: '3'
+services:
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.2.0
+    container_name: elasticsearch
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    environment: 
+      - discovery.type=single-node
+    networks:
+      - local-network
+  kibana:
+    image: docker.elastic.co/kibana/kibana:7.2.0
+    container_name: kibana
+    volumes:
+      - ./kibana/kibana.yml:/usr/share/kibana/config/kibana.yml
+    environment:
+      SERVER_NAME: localhost
+      ELASTICSEARCH_URL: http://elasticsearch:9200
+    ports:
+      - "5601:5601"
+    networks:
+      - local-network
+    depends_on:
+        - elasticsearch
+  logstash:
+    build: ./logstash
+    container_name: logstash
+    environment: 
+      - ./logstash/config/logstash.yml:/usr/share/logstash/config/logstash.yml:ro
+      - ./logstash/pipeline:/usr/share/logstash/pipeline:ro
+    ports:
+      - "9600:9600"
+      - "5044:5044"
+    networks:
+      - local-network
+    links: 
+      - mssql-2019
+      - elasticsearch
+    depends_on:
+        - elasticsearch
+  mssql-2019:
+    build: ./sqlserver
+    container_name: "mssql-2019"
+    networks: 
+      - local-network
+    ports:
+      - "1433:1433"
+    restart: always   
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=example123!   
+      - MSSQL_PID=Developer
+    volumes:
+      - mssql-2019-volumes:/var/opt/mssql
+networks: 
+  local-network:
+    driver: bridge
+volumes:
+  mssql-2019-volumes:
